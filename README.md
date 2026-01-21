@@ -1,14 +1,17 @@
 ## windows 新建python项目
 ``` bash
-irm https://raw.githubusercontent.com/Platinum1154/cloud-bin/refs/heads/main/test.ps1 | iex
+irm https://raw.githubusercontent.com/Platinum1154/cloud-bin/refs/heads/main/win/scripts/PyStart.ps1 | iex
 ```
 ## linux 新建python项目
 ``` bash
-curl -sSf https://raw.githubusercontent.com/Platinum1154/cloud-bin/refs/heads/main/test.sh | bash -s my-project
+curl -sSf https://raw.githubusercontent.com/Platinum1154/cloud-bin/refs/heads/main/nix/scripts/PyStart.sh | bash -s my-project
 ```
 ``` bash
-bash <(curl -s https://raw.githubusercontent.com/Platinum1154/cloud-bin/refs/heads/main/test.sh)
+bash <(curl -s https://raw.githubusercontent.com/Platinum1154/cloud-bin/refs/heads/main/nix/scripts/PyStart.sh)
 ```
 
-
+## linux 配置代理
+``` bash
+bash <(curl -s https://raw.githubusercontent.com/Platinum1154/cloud-bin/refs/heads/main/nix/proxy/set_bash_proxy.sh)
+```
 
