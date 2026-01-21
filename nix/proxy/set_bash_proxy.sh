@@ -4,15 +4,12 @@ BASHRC_FILE="$HOME/.bashrc"
 START_MARK="# === PROXY_CONFIG_START (DO NOT EDIT) ==="
 END_MARK="# === PROXY_CONFIG_END ==="
 
-# 1. 获取输入 (带默认值)
-read -p "请输入代理主机 IP (例如 192.168.1.204): " USER_HOST
+# 1. 获取输入
+read -p "请输入代理主机 IP (默认 127.0.0.1): " USER_HOST
+USER_HOST=${USER_HOST:-127.0.0.1}  
+
 read -p "请输入代理端口 (默认 7890): " USER_PORT
 USER_PORT=${USER_PORT:-7890}
-
-if [ -z "$USER_HOST" ]; then
-    echo "❌ 错误: IP 不能为空"
-    exit 1
-fi
 
 # 2. 备份文件
 cp "$BASHRC_FILE" "${BASHRC_FILE}.bak"
@@ -29,9 +26,6 @@ if grep -q "$START_MARK" "$BASHRC_FILE"; then
 fi
 
 # 4. 写入配置 (完全保留你的原始逻辑)
-# 注意：除了 $USER_HOST 和 $USER_PORT 是现在替换，
-# 其他变量（如 $PROXY_HOST）我都加了反斜杠 \，确保它们原样写入 bashrc
-
 cat << EOF >> "$BASHRC_FILE"
 $START_MARK
 # -----------------------------------------------------------
