@@ -45,7 +45,7 @@ alias proxy_off='unset http_proxy https_proxy all_proxy; echo "🚫 代理已关
 alias proxy_on='export http_proxy="http://\${PROXY_HOST}:\${PROXY_PORT}"; export https_proxy="http://\${PROXY_HOST}:\${PROXY_PORT}"; echo "✅ 代理已强制开启 (IP: \${PROXY_HOST})"'
 
 # 测试代理服务器连通性，超时时间为5秒。
-if timeout 3 nc -z $PROXY_HOST $PROXY_PORT; then
+if (echo > /dev/tcp/\${PROXY_HOST}/\${PROXY_PORT}) &> /dev/null; then
     echo "🌐 代理服务器可用，设置代理 http://\${PROXY_HOST}:\${PROXY_PORT}"
     export http_proxy="http://\${PROXY_HOST}:\${PROXY_PORT}"
     export https_proxy="http://\${PROXY_HOST}:\${PROXY_PORT}"
