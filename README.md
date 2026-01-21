@@ -1,6 +1,6 @@
 ## windows 新建python项目
 ``` bash
-irm https://raw.githubusercontent.com/Platinum1154/cloud-bin/main/test.ps1 | iex
+irm https://raw.githubusercontent.com/Platinum1154/cloud-bin/refs/heads/main/test.ps1 | iex
 ```
 ## linux 新建python项目
 ``` bash
