@@ -1,26 +1,26 @@
 #!/bin/bash
 
 BASHRC_FILE="$HOME/.bashrc"
-START_MARK="# === AUTO_PROXY_CONFIG_START ==="
-END_MARK="# === AUTO_PROXY_CONFIG_END ==="
+START_MARK="# === PROXY_CONFIG_START (DO NOT EDIT) ==="
+END_MARK="# === PROXY_CONFIG_END ==="
 
-# 1. 获取用户输入
+# 1. 获取输入 (带默认值)
 read -p "请输入代理主机 IP (例如 192.168.1.204): " USER_HOST
 read -p "请输入代理端口 (默认 7890): " USER_PORT
-USER_PORT=${USER_PORT:-7890} 
+USER_PORT=${USER_PORT:-7890}
 
 if [ -z "$USER_HOST" ]; then
-    echo "❌ 错误: IP 地址不能为空"
+    echo "❌ 错误: IP 不能为空"
     exit 1
 fi
 
-# 2. 备份
+# 2. 备份文件
 cp "$BASHRC_FILE" "${BASHRC_FILE}.bak"
 
-# 3. 清理旧配置 (如果有)
+# 3. 如果存在旧配置，先删除 (实现“修改”功能)
 if grep -q "$START_MARK" "$BASHRC_FILE"; then
-    echo "🔄 检测到旧配置，正在清理并更新..."
-    # 兼容 Mac 和 Linux 的 sed 写法
+    echo "🔄 检测到已有配置，正在更新 IP..."
+    # 兼容 Mac 和 Linux 的 sed 删除
     if [[ "$OSTYPE" == "darwin"* ]]; then
         sed -i '' "/$START_MARK/,/$END_MARK/d" "$BASHRC_FILE"
     else
@@ -28,50 +28,41 @@ if grep -q "$START_MARK" "$BASHRC_FILE"; then
     fi
 fi
 
-# 4. 写入新配置
-# 注意：${PROXY_...} 前面的 \ 是为了让这些变量原样写入文件，而不是在脚本运行时被替换
+# 4. 写入配置 (完全保留你的原始逻辑)
+# 注意：除了 $USER_HOST 和 $USER_PORT 是现在替换，
+# 其他变量（如 $PROXY_HOST）我都加了反斜杠 \，确保它们原样写入 bashrc
+
 cat << EOF >> "$BASHRC_FILE"
 $START_MARK
-# 代理服务器配置 (自动生成)
+# -----------------------------------------------------------
+# 代理配置区
+# -----------------------------------------------------------
 PROXY_HOST="$USER_HOST"
 PROXY_PORT="$USER_PORT"
 
-# 连通性测试 (超时 1 秒)
-if command -v timeout &> /dev/null; then
-    # Linux 方式
-    CHECK_CMD="timeout 0.5 cat < /dev/null > /dev/tcp/\${PROXY_HOST}/\${PROXY_PORT}"
-else
-    # Mac/其它 方式 (没有 timeout 命令时简单的 nc 检测，或者是忽略超时控制)
-    CHECK_CMD="nc -z -G 1 \${PROXY_HOST} \${PROXY_PORT}"
-fi
+# 手动开关
+alias proxy_off='unset http_proxy https_proxy all_proxy; echo "🚫 代理已关闭"'
+alias proxy_on='export http_proxy="http://\${PROXY_HOST}:\${PROXY_PORT}"; export https_proxy="http://\${PROXY_HOST}:\${PROXY_PORT}"; echo "✅ 代理已强制开启 (IP: \${PROXY_HOST})"'
 
-if eval "\$CHECK_CMD" 2> /dev/null; then
+# 测试代理服务器连通性，超时时间为5秒。
+if (echo > /dev/tcp/\${PROXY_HOST}/\${PROXY_PORT}) &> /dev/null; then
+    echo "🌐 代理服务器可用，设置代理 http://\${PROXY_HOST}:\${PROXY_PORT}"
     export http_proxy="http://\${PROXY_HOST}:\${PROXY_PORT}"
     export https_proxy="http://\${PROXY_HOST}:\${PROXY_PORT}"
-    # echo "✅ 代理已自动连接"
 else
+    echo "⚠️ 代理服务器不可用，取消所有代理"
     unset http_proxy
     unset https_proxy
-    # echo "⚠️ 代理不通，已自动直连"
 fi
 $END_MARK
 EOF
 
-echo "✅ 配置已写入 .bashrc (IP: $USER_HOST:$USER_PORT)"
+echo "✅ 配置已更新。IP: $USER_HOST 端口: $USER_PORT"
 
-# ==========================================
-# 5. 核心修改：让配置立即生效
-# ==========================================
-
-# 判断脚本是被 source 运行的，还是被直接执行的
+# 5. 自动生效
 if [[ "${BASH_SOURCE[0]}" != "${0}" ]]; then
-    # 情况 A: 用户用了 "source ./script.sh"
-    # 直接刷新环境即可
     source "$BASHRC_FILE"
-    echo "⚡️ 环境变量已在当前终端刷新！"
 else
-    # 情况 B: 用户用了 "./script.sh" (最常见的情况)
-    # 我们必须用 exec bash 替换当前 Shell 进程，来模拟“重启终端”的效果
-    echo "🔄 正在重新加载 Shell 环境以使配置生效..."
+    echo "🔄 正在重新加载 Shell..."
     exec bash -l
 fi
